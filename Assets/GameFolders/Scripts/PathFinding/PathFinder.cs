@@ -27,7 +27,8 @@ public class PathFinder : MonoBehaviour
     private void Start()
     {
         _interestPointsHandler = new InterestPointsHandler(_mapView.map);
-         BreadthsFirstSearchAlgorithm();
+        //BreadthsFirstSearchAlgorithm();
+        DijkstrasAlgorithm();
         //instantiate normal algorithm
     }
 
@@ -64,7 +65,7 @@ public class PathFinder : MonoBehaviour
                         }
                     }
                     return;
-                }    
+                }    //handle end path green
             }
             currentCell = _cellsQueue.Dequeue();
         }
@@ -75,17 +76,16 @@ public class PathFinder : MonoBehaviour
         Cell currentCell = _startCell;
         ClearLists();
         SetOpenCellList();
-        
 
         while (currentCell != _endCell && _openCells.Count > 0)
         {
+            currentCell.CalculateCellCost();
             foreach (var neighbour in currentCell.neighboursList)
             {
                 if (_cellsQueue.Contains(neighbour)) 
                     continue;
 
                 await Awaitable.WaitForSecondsAsync(0.025f);
-
                 HandleLists(neighbour);
                 CellInspected(currentCell, neighbour);
 
@@ -104,8 +104,9 @@ public class PathFinder : MonoBehaviour
                         }
                     }
                     return;
-                }
+                } //handle end path
             }
+           
             currentCell = _cellsQueue.Dequeue();
         }
     }
@@ -126,31 +127,17 @@ public class PathFinder : MonoBehaviour
         if (neighbourCell != _startCell && neighbourCell != _endCell)
             neighbourCell.ChangeColor(false);
 
-        if (neighbourCell.ParentCell == null) //this will be decided according to the algorithm being used
+        if (neighbourCell.ParentCell == null && neighbourCell != _startCell)
             neighbourCell.SetParentCell(activeCell);
     }
 
-    private void CheckForABetterRoute(Cell cellToCheck)
-    {
-        //check if 
-        int currentCost = 99999999; //mathf infinity
-        foreach(var neighbourCell in cellToCheck.neighboursList)
-        {
-            if(neighbourCell.CellCost < currentCost)
-            {
-                currentCost = neighbourCell.CellCost;
-                cellToCheck.ParentCell = neighbourCell;
-            }
-        }
-    }
 
     private void SetOpenCellList()
     {
         foreach(var cell in _mapView.map.AllCells)
         {
             if (!cell.IsBlocked)
-                _openCells.Add(cell);
-                
+                _openCells.Add(cell);     
         }
     }
 

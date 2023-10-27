@@ -1,14 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using System;
 
 public class CostHandler 
 {
     public int CellCost { get; private set; }
-    private Cell _parentCell;
-
-    
+    private const int INITCOST = 99999;
+    private Cell _cell;
+    private int _unitCostToParent;
 
     /// <summary>
     /// For each algorithm type, create an interface and create new instances
@@ -16,29 +14,39 @@ public class CostHandler
     /// </summary>
     /// <param name="parentCell"></param>
 
-    public CostHandler(Cell parentCell) 
+    public CostHandler(Cell cell) 
     {
-        _parentCell= parentCell;
+        _cell= cell;
+        CellCost = INITCOST;
     }
 
-    public void CalculateCellCost(Cell startCell, Cell endCell) //type in the algorithm type here
+    public void UpdateCellCost()
     {
-        CalculateEndPointCost(startCell, endCell);
+        CellCost = 0;
+        if (_cell.ParentCell == null)
+            return;
+
+        CalculateUnitCost();
+        CellCost = _unitCostToParent + _cell.ParentCell.CellCost;
+        CheckForABetterCost();
     }
 
-    private void CalculateEndPointCost(Cell startCell, Cell endCell)
+    public void CheckForABetterCost()
     {
-        //if (ParentCell != null)
-        //    CellCost += ParentCell.CellCost;
+        if (_cell.ParentCell == null) return;
+        foreach (var cell in _cell.neighboursList)
+        {
+            if (cell.CellCost < _cell.ParentCell.CellCost)
+            {
+                _cell.SetParentCell(cell);
+                CalculateUnitCost();
+                CellCost = Mathf.Min(_cell.ParentCell.CellCost + _unitCostToParent, CellCost);
+            }
+        }
+    }
 
-        int xDistance = Mathf.Abs(_parentCell.xPos - endCell.xPos);
-        int yDistance = Mathf.Abs(_parentCell.yPos - endCell.yPos);
-
-        int diagonalAmount = Mathf.Min(xDistance, yDistance);
-        int maxAmount = Mathf.Max(xDistance, yDistance);
-        int nonDiagonalAmount = maxAmount - diagonalAmount;
-
-        CellCost = nonDiagonalAmount * 10 + diagonalAmount * 14;
-        //_cellView.CellCostUpdated(CellCost);
+    private void CalculateUnitCost()
+    {
+        _unitCostToParent = DistanceCalculator.CalculateCellCost(_cell.ParentCell, _cell);
     }
 }

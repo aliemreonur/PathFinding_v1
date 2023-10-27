@@ -28,12 +28,13 @@ public class Cell
         _yPos = y;
         _isBlocked = false;
         _neighbourGatherer = new NeighbourGatherer(this, _map);
-        _costHandler = new CostHandler(this);
+ 
     }
 
     public void AssignCellView(CellView cellViewToAssign)
     {
         _cellView = cellViewToAssign;
+        _costHandler = new CostHandler(this);
     }
 
     public void ChangeColor(bool onPath = false)
@@ -61,11 +62,20 @@ public class Cell
         _cellView.ChangeInterestPointColor(isStart);
     }
 
-    public void CalculateCellCost(Cell startCell, Cell goalCell) //algorithmtype
+    public void CalculateCellCost() //algorithmtype
     {
-        //if (ParentCell != null)
-        //    CellCost += ParentCell.CellCost;
-        _costHandler.CalculateCellCost(startCell, goalCell);
+        _costHandler.UpdateCellCost();
+        UpdateVisual();
+    }
+
+    public void CheckForAlternative()
+    {
+        _costHandler.CheckForABetterCost();
+        UpdateVisual();
+    }
+
+    private void UpdateVisual()
+    {
         _cellView.CellCostUpdated(CellCost);
     }
 
