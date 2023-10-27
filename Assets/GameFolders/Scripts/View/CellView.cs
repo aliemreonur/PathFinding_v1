@@ -6,7 +6,9 @@ using TMPro;
 public class CellView : MonoBehaviour
 {
     private SpriteRenderer _spriteRenderer;
-    private TextMeshPro _costText;
+    [SerializeField] private TextMeshPro _fText;
+    [SerializeField] private TextMeshPro _gText;
+    [SerializeField] private TextMeshPro _hText;
     private Color _defaultColor;
 
     private void Awake()
@@ -14,10 +16,7 @@ public class CellView : MonoBehaviour
         _spriteRenderer = GetComponent<SpriteRenderer>();
         if (_spriteRenderer == null)
             Debug.LogError("The cell could not gather its mat");
-        _costText = GetComponentInChildren<TextMeshPro>();
-        if (_costText == null)
-            Debug.Log("The cell could not gather its TMPro");
-        SetDefaultColor(Color.white);
+        _defaultColor = _spriteRenderer.material.color;
     }
 
     public void ChangeInterestPointColor(bool isStart)
@@ -25,7 +24,6 @@ public class CellView : MonoBehaviour
         _spriteRenderer.color = isStart ? Color.green : Color.red;
         _defaultColor = _spriteRenderer.color;
     }
-
 
     public void CellVisited()
     {
@@ -47,12 +45,17 @@ public class CellView : MonoBehaviour
     public void Reset()
     {
         _spriteRenderer.color = _defaultColor;
-        _costText.SetText("");
+        _fText.SetText("");
     }
 
     public void CellCostUpdated(int amount)
     {
-        _costText.SetText(amount.ToString());
+        _fText.SetText(amount.ToString());
+    }
+
+    public void HCostUpdated(int amount)
+    {
+        _hText.SetText(amount.ToString());
     }
 
     private void SetDefaultColor(Color colorToSet)

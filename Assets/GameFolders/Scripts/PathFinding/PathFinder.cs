@@ -45,6 +45,46 @@ public class PathFinder : MonoBehaviour
         InitializeAlgo();
 
 
+        while (_currentCell != _endCell && _openCells.Count > 0)
+        {
+            _currentCell.CalculateHCost(_endCell);
+
+            var currentHCost = 9999;
+            Cell nextCell = _currentCell;
+
+            foreach (var neighbour in _currentCell.neighboursList)
+            {
+                if (_visitedCells.Contains(neighbour))
+                    continue;
+
+                CellInspected(_currentCell, neighbour);
+                neighbour.CalculateHCost(_endCell);
+                await Awaitable.WaitForSecondsAsync(0.01f);
+
+                HandleLists(neighbour, false);
+                if (neighbour == _endCell)
+                {
+                    await CreatePath(neighbour);
+                    return;
+                }
+            }
+            
+            //search the visited cells for the lowest HCost
+
+            foreach(var cell in _visitedCells)
+            {
+                if (cell.HCost < currentHCost)
+                {
+                    currentHCost = cell.HCost;
+                    nextCell = cell;
+                }
+            }
+
+            //_cellsQueue.Enqueue(nextCell); 
+            _currentCell = nextCell;
+            //_currentCell = _cellsQueue.Dequeue();
+        }
+
     }
 
     public async void BreadthsFirstSearchAlgorithm()
@@ -70,7 +110,7 @@ public class PathFinder : MonoBehaviour
         InitializeAlgo();
         while (_currentCell != _endCell && _openCells.Count > 0)
         {
-            _currentCell.CalculateCellCost();
+            _currentCell.CalculateGCost();
             await Trial(true);
            
             _currentCell = _cellsQueue.Dequeue();
@@ -80,7 +120,8 @@ public class PathFinder : MonoBehaviour
     private async Task CreatePath(Cell neighbour, bool dijkstraOn = false)
     {
         if(dijkstraOn)
-            neighbour.CalculateCellCost();
+            await neighbour.CalculateGCost();
+
         Cell cell = neighbour.ParentCell;
         
         cell.ChangeColor(true);
@@ -97,15 +138,17 @@ public class PathFinder : MonoBehaviour
         return;
     }
 
-    private void HandleLists(Cell cellToHandle)
+    private void HandleLists(Cell cellToHandle, bool queueOn = true)
     {
-        _cellsQueue.Enqueue(cellToHandle);
-
         if (_openCells.Contains(cellToHandle))
             _openCells.Remove(cellToHandle);
 
         if (!_visitedCells.Contains(cellToHandle)) //the difference between the open cells?
             _visitedCells.Add(cellToHandle);
+        if (!queueOn)
+            return;
+        
+        _cellsQueue.Enqueue(cellToHandle);
     }
 
     private void CellInspected(Cell activeCell, Cell neighbourCell)
@@ -131,6 +174,8 @@ public class PathFinder : MonoBehaviour
 
             if (neighbour == _endCell)
             {
+                if (dijkstraOn)
+                    neighbour.CalculateGCost();
                 await CreatePath(neighbour, dijkstraOn);
                 return;
             }

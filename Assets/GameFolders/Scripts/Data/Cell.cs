@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading.Tasks;
 
 [System.Serializable]
 public class Cell
 {
     public List<Cell> neighboursList => _neighbourGatherer.neighbourCells;
     public int CellCost => _costHandler.CellCost;
+    public int GCost => _costHandler.GCost;
+    public int HCost => _costHandler.HCost;
     public bool IsBlocked => _isBlocked;
     public Cell ParentCell { get; private set; }
     public int xPos => _xPos;
@@ -60,15 +63,21 @@ public class Cell
         _cellView.ChangeInterestPointColor(isStart);
     }
 
-    public void CalculateCellCost() //algorithmtype
+    public async Task CalculateGCost() 
     {
-        _costHandler.UpdateCellCost();
+        await _costHandler.SetGCost();
         UpdateVisual();
+    }
+
+    public void CalculateHCost(Cell endCell)
+    {
+        _costHandler.CalculateHeuristicCost(endCell);
+        _cellView.HCostUpdated(HCost);
     }
 
     public void Reset()
     {
-        _costHandler.Reset();
+        _costHandler.ResetCosts();
         ParentCell = null;
         _cellView.Reset();
     }
