@@ -7,6 +7,7 @@ public class CellView : MonoBehaviour
 {
     private SpriteRenderer _spriteRenderer;
     private TextMeshPro _costText;
+    private Color _defaultColor;
 
     private void Awake()
     {
@@ -16,12 +17,15 @@ public class CellView : MonoBehaviour
         _costText = GetComponentInChildren<TextMeshPro>();
         if (_costText == null)
             Debug.Log("The cell could not gather its TMPro");
+        SetDefaultColor(Color.white);
     }
 
     public void ChangeInterestPointColor(bool isStart)
     {
         _spriteRenderer.color = isStart ? Color.green : Color.red;
+        _defaultColor = _spriteRenderer.color;
     }
+
 
     public void CellVisited()
     {
@@ -31,15 +35,28 @@ public class CellView : MonoBehaviour
     public void CellOnPath()
     {
         _spriteRenderer.color = Color.green;
+      
     }
 
     public void BlockedCell()
     {
         _spriteRenderer.color = Color.black;
+        _defaultColor = Color.black;
+    }
+
+    public void Reset()
+    {
+        _spriteRenderer.color = _defaultColor;
+        _costText.SetText("");
     }
 
     public void CellCostUpdated(int amount)
     {
         _costText.SetText(amount.ToString());
+    }
+
+    private void SetDefaultColor(Color colorToSet)
+    {
+        _defaultColor = colorToSet;
     }
 }

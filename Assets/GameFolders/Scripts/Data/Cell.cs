@@ -28,7 +28,6 @@ public class Cell
         _yPos = y;
         _isBlocked = false;
         _neighbourGatherer = new NeighbourGatherer(this, _map);
- 
     }
 
     public void AssignCellView(CellView cellViewToAssign)
@@ -43,7 +42,6 @@ public class Cell
             _cellView.CellOnPath();
         else
             _cellView.CellVisited();
- 
     }
 
     public void SetParentCell(Cell parentCell)
@@ -68,10 +66,11 @@ public class Cell
         UpdateVisual();
     }
 
-    public void CheckForAlternative()
+    public void Reset()
     {
-        _costHandler.CheckForABetterCost();
-        UpdateVisual();
+        _costHandler.Reset();
+        ParentCell = null;
+        _cellView.Reset();
     }
 
     private void UpdateVisual()

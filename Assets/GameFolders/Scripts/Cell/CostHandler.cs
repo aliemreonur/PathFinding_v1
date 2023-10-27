@@ -44,9 +44,15 @@ public class CostHandler
             }
         }
     }
+    public void Reset()
+    {
+        CellCost = INITCOST;
+    }
 
     private void CalculateUnitCost()
     {
         _unitCostToParent = DistanceCalculator.CalculateCellCost(_cell.ParentCell, _cell);
     }
+
+
 }

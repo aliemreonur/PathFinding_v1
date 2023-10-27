@@ -6,5 +6,5 @@ public enum AlgorithmType
 {
     Bridths,
     Greedy,
-    Astar
+    AStar
 }

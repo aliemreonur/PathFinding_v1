@@ -1,41 +1,31 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using System;
 
 public class MapView : MonoBehaviour
 {
-    public static MapView Instance;
+    public Action<byte, byte> OnMapSet;
     [SerializeField] private CellView _cellViefPrefab;
+    public static MapView Instance => _instance;
     public CellView[,] allCellViews;
     public Map map => _map;
 
-    public int MapWidth;
-    public int MapHeight;
+    public byte MapWidth;
+    public byte MapHeight;
 
     private static MapView _instance;
     private Map _map;
 
     private void Awake()
     {
-        SingletonThis();
+        _instance = this;
         _map = new Map(MapWidth, MapHeight);
         allCellViews = new CellView[MapWidth, MapHeight];
-
-        GenerateMap();
+      
     }
 
-    private void SingletonThis()
+    private void Start()
     {
-        if (_instance == null)
-        {
-            _instance = this;
-            DontDestroyOnLoad(_instance.gameObject);
-        }
-        else if (this != _instance)
-        {
-            Destroy(this.gameObject);
-        }
+        GenerateMap();
     }
 
     private void GenerateMap()
@@ -52,10 +42,9 @@ public class MapView : MonoBehaviour
                 associatedCell.AssignCellView(instantiatedCellView);
                 if (associatedCell.IsBlocked)
                     instantiatedCellView.BlockedCell();
-
-                //check if the cell is blocked
             }
         }
+        OnMapSet?.Invoke(MapWidth, MapHeight);
     }
 
 }

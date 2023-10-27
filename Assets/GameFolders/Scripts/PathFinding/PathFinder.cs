@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
-using static UnityEngine.RuleTile.TilingRuleOutput;
 
 [RequireComponent(typeof(MapView))]
 public class PathFinder : MonoBehaviour
@@ -14,6 +13,7 @@ public class PathFinder : MonoBehaviour
     private Queue<Cell> _cellsQueue= new Queue<Cell>();
     private Cell _startCell => _interestPointsHandler.StartCell;
     private Cell _endCell => _interestPointsHandler.EndCell;
+    private Cell _currentCell;
 
     private MapView _mapView;
 
@@ -24,91 +24,77 @@ public class PathFinder : MonoBehaviour
         _mapView = GetComponent<MapView>();
     }
 
-    private void Start()
+    private void OnEnable()
     {
-        _interestPointsHandler = new InterestPointsHandler(_mapView.map);
-        //BreadthsFirstSearchAlgorithm();
-        DijkstrasAlgorithm();
-        //instantiate normal algorithm
+        _mapView.OnMapSet += SetInterestPoints;
     }
 
-    private async void BreadthsFirstSearchAlgorithm() 
+    private void OnDisable()
     {
-        Cell currentCell = _startCell;
-        ClearLists();
-        SetOpenCellList();
+        _mapView.OnMapSet -= SetInterestPoints;
+    }
 
-        while(currentCell != _endCell && _openCells.Count>0)
+    public void Reset()
+    {
+        foreach (var cell in _mapView.map.AllCells)
+            cell.Reset();
+    }
+
+    public async void GreedyAlgorihm()
+    {
+        InitializeAlgo();
+
+
+    }
+
+    public async void BreadthsFirstSearchAlgorithm()
+    {
+        InitializeAlgo();
+
+        while (_currentCell != _endCell && _openCells.Count > 0)
         {
-            foreach (var neighbour in currentCell.neighboursList)
-            {
-                if (_cellsQueue.Contains(neighbour)) //what about the cost?
-                    continue;
-
-                await Awaitable.WaitForSecondsAsync(0.025f);
-
-                HandleLists(neighbour);
-                CellInspected(currentCell, neighbour);
-
-                if (neighbour == _endCell)
-                {
-                    Cell cell = neighbour.ParentCell;
-                    cell.ChangeColor(true);
-                    cell = cell.ParentCell;
-                    if(cell != null)
-                    {
-                        while(cell != _startCell)
-                        {
-                            await Awaitable.WaitForSecondsAsync(.25f);
-                            cell.ChangeColor(true);
-                            cell = cell.ParentCell;
-                        }
-                    }
-                    return;
-                }    //handle end path green
-            }
-            currentCell = _cellsQueue.Dequeue();
+            await Trial();
+            _currentCell = _cellsQueue.Dequeue();
         }
     }
 
-    private async void DijkstrasAlgorithm() 
+    private void InitializeAlgo()
     {
-        Cell currentCell = _startCell;
+        _currentCell = _startCell;
         ClearLists();
         SetOpenCellList();
+    }
 
-        while (currentCell != _endCell && _openCells.Count > 0)
+    public async void DijkstrasAlgorithm() 
+    {
+        InitializeAlgo();
+        while (_currentCell != _endCell && _openCells.Count > 0)
         {
-            currentCell.CalculateCellCost();
-            foreach (var neighbour in currentCell.neighboursList)
-            {
-                if (_cellsQueue.Contains(neighbour)) 
-                    continue;
-
-                await Awaitable.WaitForSecondsAsync(0.025f);
-                HandleLists(neighbour);
-                CellInspected(currentCell, neighbour);
-
-                if (neighbour == _endCell)
-                {
-                    Cell cell = neighbour.ParentCell;
-                    cell.ChangeColor(true);
-                    cell = cell.ParentCell;
-                    if (cell != null)
-                    {
-                        while (cell != _startCell)
-                        {
-                            await Awaitable.WaitForSecondsAsync(.25f);
-                            cell.ChangeColor(true);
-                            cell = cell.ParentCell;
-                        }
-                    }
-                    return;
-                } //handle end path
-            }
+            _currentCell.CalculateCellCost();
+            await Trial(true);
            
-            currentCell = _cellsQueue.Dequeue();
+            _currentCell = _cellsQueue.Dequeue();
         }
+    }
+
+    private async Task CreatePath(Cell neighbour, bool dijkstraOn = false)
+    {
+        if(dijkstraOn)
+            neighbour.CalculateCellCost();
+        Cell cell = neighbour.ParentCell;
+        
+        cell.ChangeColor(true);
+        cell = cell.ParentCell;
+        if (cell != null)
+        {
+            while (cell != _startCell)
+            {
+                await Awaitable.WaitForSecondsAsync(.25f);
+                cell.ChangeColor(true);
+                cell = cell.ParentCell;
+            }
+        }
+        return;
     }
 
     private void HandleLists(Cell cellToHandle)
@@ -132,6 +118,25 @@ public class PathFinder : MonoBehaviour
     }
 
 
+    private async Task Trial(bool dijkstraOn = false)
+    {
+        foreach (var neighbour in _currentCell.neighboursList)
+        {
+            if (_visitedCells.Contains(neighbour))
+                continue;
+
+            await Awaitable.WaitForSecondsAsync(0.01f);
+            HandleLists(neighbour);
+            CellInspected(_currentCell, neighbour);
+
+            if (neighbour == _endCell)
+            {
+                await CreatePath(neighbour, dijkstraOn);
+                return;
+            }
+        }
+    }
+
     private void SetOpenCellList()
     {
         foreach(var cell in _mapView.map.AllCells)
@@ -148,5 +153,8 @@ public class PathFinder : MonoBehaviour
         _cellsQueue.Clear();
     }
 
-
+    private void SetInterestPoints(byte dummy, byte dummy2) // :)
+    {
+        _interestPointsHandler = new InterestPointsHandler(_mapView.map);
+    }
 }
