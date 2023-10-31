@@ -2,27 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
+using System;
 
 [RequireComponent(typeof(MapView))]
 public class PathFinder : MonoBehaviour
 {
     private InterestPointsHandler _interestPointsHandler;
 
-    private List<Cell> _openCells = new();
-    private List<Cell> _visitedCells = new();
-    private Queue<Cell> _cellsQueue= new Queue<Cell>();
-    private Cell _startCell => _interestPointsHandler.StartCell;
-    private Cell _endCell => _interestPointsHandler.EndCell;
+    public Cell startCell => _interestPointsHandler.StartCell;
+    public Cell endCell => _interestPointsHandler.EndCell;
+    public AlgorithmType activeAlgo;
     private Cell _currentCell;
 
     private MapView _mapView;
     private bool _searchActive = false;
 
-    private IPathAlgorithm _normalAlgorithm;
+    private IPathAlgorithm _searchByNeighbours, _greedyAlgorithm, _aStarAlgorithm;
+    private IPathAlgorithm _activeAlgorithm;
+    private PathListHandler _pathListHandler;
 
     private void Awake()
     {
         _mapView = GetComponent<MapView>();
+        _pathListHandler = new PathListHandler();
+        _searchByNeighbours = new SearcherbyNeighbours(this, _pathListHandler);
     }
 
     private void OnEnable()
@@ -42,11 +45,33 @@ public class PathFinder : MonoBehaviour
             cell.Reset();
     }
 
-    private void CreatePath(IPathAlgorithm pathAlgorithm)
+    public void SetAlgorithm(int algoID)
     {
-        //pathalgorithm search
+        switch(algoID)
+        {
+            case 1:
+                activeAlgo = AlgorithmType.Bridths;
+                _activeAlgorithm = _searchByNeighbours;
+                break;
+            case 2:
+                activeAlgo = AlgorithmType.Dijkstra;
+                _activeAlgorithm = _searchByNeighbours;
+                break;
+            case 3:
+                activeAlgo = AlgorithmType.Greedy;
+                _activeAlgorithm = _greedyAlgorithm;
+                break;
+            default:
+                activeAlgo = AlgorithmType.AStar;
+                _activeAlgorithm = _aStarAlgorithm;
+                break;
+        }
+
+        _activeAlgorithm.CalculateShortestPath(startCell, endCell);
+
     }
 
+    /*
     public async void GreedyAlgorihm() //some cases result in endless loop
     {
         InitializeAlgo();
@@ -54,7 +79,7 @@ public class PathFinder : MonoBehaviour
 
         while (_currentCell.neighboursList.Count > 0 && _searchActive && iterations<500)
         {
-            _currentCell.CalculateHCost(_endCell);
+            _currentCell.CalculateHCost(endCell);
             iterations++;
             if (iterations == 499)
                 Debug.Log("HMMM");
@@ -65,11 +90,11 @@ public class PathFinder : MonoBehaviour
                     continue;
 
                 CellInspected(_currentCell, neighbour);
-                neighbour.CalculateHCost(_endCell);
+                neighbour.CalculateHCost(endCell);
                 await Awaitable.WaitForSecondsAsync(0.01f);
 
                 HandleLists(neighbour, false);
-                if (neighbour == _endCell)
+                if (neighbour == endCell)
                 {
                     await CreatePath(neighbour);
                     _searchActive = false;
@@ -93,41 +118,9 @@ public class PathFinder : MonoBehaviour
         }
 
     }
+    */
 
-    private async void BreadthsFirstSearchAlgorithm()
-    {
-        InitializeAlgo();
-
-        while (_openCells.Count > 0 && _searchActive)
-        {
-            await SearchByNeighbours();
-            _currentCell = _cellsQueue.Dequeue();
-        }
-    }
-
-
-
-    private async void DijkstrasAlgorithm() 
-    {
-        InitializeAlgo();
-        while (_openCells.Count > 0 && _searchActive)
-        {
-            _currentCell.CalculateGCost();
-            await SearchByNeighbours(true);
-           
-            _currentCell = _cellsQueue.Dequeue();
-        }
-    }
-
-    private void InitializeAlgo()
-    {
-        _searchActive = true;
-        _currentCell = _startCell;
-        ClearLists();
-        SetOpenCellList();
-    }
-
-    private async Task CreatePath(Cell neighbour, bool dijkstraOn = false)
+    public async Task CreatePath(Cell neighbour, bool dijkstraOn = false)
     {
         if(dijkstraOn)
              neighbour.CalculateGCost();
@@ -138,9 +131,9 @@ public class PathFinder : MonoBehaviour
         cell = cell.ParentCell;
         if (cell != null)
         {
-            while (cell != _startCell)
+            while (cell != startCell)
             {
-                await Awaitable.WaitForSecondsAsync(.25f);
+                await Awaitable.WaitForSecondsAsync(.15f);
                 cell.ChangeColor(true);
                 cell = cell.ParentCell;
             }
@@ -148,66 +141,15 @@ public class PathFinder : MonoBehaviour
         return;
     }
 
-    private void HandleLists(Cell cellToHandle, bool queueOn = true)
+    public void CellInspected(Cell activeCell, Cell neighbourCell)
     {
-        if (_openCells.Contains(cellToHandle))
-            _openCells.Remove(cellToHandle);
-
-        if (!_visitedCells.Contains(cellToHandle)) //the difference between the open cells?
-            _visitedCells.Add(cellToHandle);
-        if (!queueOn)
-            return;
-        
-        _cellsQueue.Enqueue(cellToHandle);
-    }
-
-    private void CellInspected(Cell activeCell, Cell neighbourCell)
-    {
-        if (neighbourCell != _startCell && neighbourCell != _endCell)
+        if (neighbourCell != startCell && neighbourCell != endCell)
             neighbourCell.ChangeColor(false);
 
-        if (neighbourCell.ParentCell == null && neighbourCell != _startCell)
+        if (neighbourCell.ParentCell == null && neighbourCell != startCell)
             neighbourCell.SetParentCell(activeCell);
     }
 
-
-    private async Task SearchByNeighbours(bool dijkstraOn = false)
-    {
-        foreach (var neighbour in _currentCell.neighboursList)
-        {
-            if (_visitedCells.Contains(neighbour))
-                continue;
-
-            await Awaitable.WaitForSecondsAsync(0.01f);
-            HandleLists(neighbour);
-            CellInspected(_currentCell, neighbour);
-
-            if (neighbour == _endCell)
-            {
-                _searchActive = false;
-                //if (dijkstraOn)
-                //    neighbour.CalculateGCost();
-                await CreatePath(neighbour, dijkstraOn);
-                return;
-            }
-        }
-    }
-
-    private void SetOpenCellList()
-    {
-        foreach(var cell in _mapView.map.AllCells)
-        {
-            if (!cell.IsBlocked)
-                _openCells.Add(cell);     
-        }
-    }
-
-    private void ClearLists()
-    {
-        _openCells.Clear();
-        _visitedCells.Clear();
-        _cellsQueue.Clear();
-    }
 
     private void SetInterestPoints(byte dummy, byte dummy2) // :)
     {

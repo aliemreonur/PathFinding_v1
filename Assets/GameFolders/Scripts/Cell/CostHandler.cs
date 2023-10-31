@@ -11,12 +11,6 @@ public class CostHandler
     private Cell _cell;
     private int _unitCostToParent;
 
-    /// <summary>
-    /// For each algorithm type, create an interface and create new instances
-    /// Let the regarding class handle the cost calculation
-    /// </summary>
-    /// <param name="parentCell"></param>
-
     public CostHandler(Cell cell) 
     {
         _cell= cell;
