@@ -12,8 +12,13 @@ public class InterestPointsHandler
     public InterestPointsHandler(Map map)
     {
         _map = map;
-        _startCell = AssignRandomPoint(true);
-        _endCell = AssignRandomPoint(false);
+        AssignInterestPoints();
+        GameManager.Instance.OnMapRestart += AssignInterestPoints;
+    }
+
+    public void DeregisterEvents()
+    {
+        GameManager.Instance.OnMapRestart -= AssignInterestPoints;
     }
 
     private Cell AssignRandomPoint(bool isStart)
@@ -45,5 +50,12 @@ public class InterestPointsHandler
 
         return randomCell;
     }
+
+    private void AssignInterestPoints()
+    {
+        _startCell = AssignRandomPoint(true);
+        _endCell = AssignRandomPoint(false);
+    }
+
 
 }

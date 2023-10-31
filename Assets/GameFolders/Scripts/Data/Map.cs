@@ -16,6 +16,7 @@ public class Map
         AllCells = new Cell[Width, Height];
         GenerateMap();
         SetRandomCellsBlocked();
+        GameManager.Instance.OnMapRestart += RestartingMap;
     }
 
     private void GenerateMap()
@@ -48,7 +49,7 @@ public class Map
 
             if (!cellToCheck.IsBlocked)
             {
-                cellToCheck.SetBlockedOn();
+                cellToCheck.SetBlockedStatus();
                 currentBlockedAmount++;
             }
             iterations++;
@@ -57,6 +58,23 @@ public class Map
         while (currentBlockedAmount< targetBlocked && iterations<maxIterations);
 
         OnMapLoaded?.Invoke();
+    }
+
+    public void DeregisterEvents()
+    {
+        GameManager.Instance.OnMapRestart -= RestartingMap;
+    }
+
+    private void RestartingMap()
+    {
+        foreach(var cell in AllCells)
+        {
+            cell.SetBlockedStatus(false);
+            cell.Reset(true);
+        }
+
+        SetRandomCellsBlocked();
+
     }
 
 }

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NeighbourGatherer 
+public class NeighbourGatherer
 {
     private Cell _parentCell;
     public List<Cell> neighbourCells { get; private set; }
@@ -14,10 +14,17 @@ public class NeighbourGatherer
         neighbourCells = new List<Cell>();
         _map = map;
         _map.OnMapLoaded += GetNeighbours;
+        GameManager.Instance.OnMapRestart += GetNeighbours;
+    }
+
+    public void DeregisterEvents()
+    {
+        GameManager.Instance.OnMapRestart -= GetNeighbours;
     }
 
     private void GetNeighbours()
     {
+        neighbourCells.Clear();
         foreach (var direction in Directions.MoveableDirections)
         {
             int xToCheck = _parentCell.xPos + direction.x;

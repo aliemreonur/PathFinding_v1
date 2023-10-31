@@ -16,6 +16,7 @@ public class PathFinder : MonoBehaviour
     private Cell _currentCell;
 
     private MapView _mapView;
+    private bool _searchActive = false;
 
     private IPathAlgorithm _normalAlgorithm;
 
@@ -32,6 +33,7 @@ public class PathFinder : MonoBehaviour
     private void OnDisable()
     {
         _mapView.OnMapSet -= SetInterestPoints;
+        _interestPointsHandler.DeregisterEvents();
     }
 
     public void Reset()
@@ -40,17 +42,22 @@ public class PathFinder : MonoBehaviour
             cell.Reset();
     }
 
-    public async void GreedyAlgorihm()
+    private void CreatePath(IPathAlgorithm pathAlgorithm)
+    {
+        //pathalgorithm search
+    }
+
+    public async void GreedyAlgorihm() //some cases result in endless loop
     {
         InitializeAlgo();
+        int iterations = 0;
 
-
-        while (_currentCell != _endCell && _openCells.Count > 0)
+        while (_currentCell.neighboursList.Count > 0 && _searchActive && iterations<500)
         {
             _currentCell.CalculateHCost(_endCell);
-
-            var currentHCost = 9999;
-            Cell nextCell = _currentCell;
+            iterations++;
+            if (iterations == 499)
+                Debug.Log("HMMM");
 
             foreach (var neighbour in _currentCell.neighboursList)
             {
@@ -65,13 +72,16 @@ public class PathFinder : MonoBehaviour
                 if (neighbour == _endCell)
                 {
                     await CreatePath(neighbour);
+                    _searchActive = false;
                     return;
                 }
             }
-            
+
             //search the visited cells for the lowest HCost
 
-            foreach(var cell in _visitedCells)
+            var currentHCost = 9999;
+            Cell nextCell = _currentCell;
+            foreach (var cell in _visitedCells)
             {
                 if (cell.HCost < currentHCost)
                 {
@@ -79,48 +89,48 @@ public class PathFinder : MonoBehaviour
                     nextCell = cell;
                 }
             }
-
-            //_cellsQueue.Enqueue(nextCell); 
             _currentCell = nextCell;
-            //_currentCell = _cellsQueue.Dequeue();
         }
 
     }
 
-    public async void BreadthsFirstSearchAlgorithm()
+    private async void BreadthsFirstSearchAlgorithm()
     {
         InitializeAlgo();
 
-        while (_currentCell != _endCell && _openCells.Count > 0)
+        while (_openCells.Count > 0 && _searchActive)
         {
-            await Trial();
+            await SearchByNeighbours();
+            _currentCell = _cellsQueue.Dequeue();
+        }
+    }
+
+
+
+    private async void DijkstrasAlgorithm() 
+    {
+        InitializeAlgo();
+        while (_openCells.Count > 0 && _searchActive)
+        {
+            _currentCell.CalculateGCost();
+            await SearchByNeighbours(true);
+           
             _currentCell = _cellsQueue.Dequeue();
         }
     }
 
     private void InitializeAlgo()
     {
+        _searchActive = true;
         _currentCell = _startCell;
         ClearLists();
         SetOpenCellList();
     }
 
-    public async void DijkstrasAlgorithm() 
-    {
-        InitializeAlgo();
-        while (_currentCell != _endCell && _openCells.Count > 0)
-        {
-            _currentCell.CalculateGCost();
-            await Trial(true);
-           
-            _currentCell = _cellsQueue.Dequeue();
-        }
-    }
-
     private async Task CreatePath(Cell neighbour, bool dijkstraOn = false)
     {
         if(dijkstraOn)
-            await neighbour.CalculateGCost();
+             neighbour.CalculateGCost();
 
         Cell cell = neighbour.ParentCell;
         
@@ -161,7 +171,7 @@ public class PathFinder : MonoBehaviour
     }
 
 
-    private async Task Trial(bool dijkstraOn = false)
+    private async Task SearchByNeighbours(bool dijkstraOn = false)
     {
         foreach (var neighbour in _currentCell.neighboursList)
         {
@@ -174,8 +184,9 @@ public class PathFinder : MonoBehaviour
 
             if (neighbour == _endCell)
             {
-                if (dijkstraOn)
-                    neighbour.CalculateGCost();
+                _searchActive = false;
+                //if (dijkstraOn)
+                //    neighbour.CalculateGCost();
                 await CreatePath(neighbour, dijkstraOn);
                 return;
             }

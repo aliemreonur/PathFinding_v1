@@ -10,13 +10,14 @@ public class CellView : MonoBehaviour
     [SerializeField] private TextMeshPro _gText;
     [SerializeField] private TextMeshPro _hText;
     private Color _defaultColor;
+    private Color _startColor;
 
     private void Awake()
     {
         _spriteRenderer = GetComponent<SpriteRenderer>();
         if (_spriteRenderer == null)
             Debug.LogError("The cell could not gather its mat");
-        _defaultColor = _spriteRenderer.material.color;
+        _startColor = _spriteRenderer.material.color;
     }
 
     public void ChangeInterestPointColor(bool isStart)
@@ -36,15 +37,16 @@ public class CellView : MonoBehaviour
       
     }
 
-    public void BlockedCell()
+    public void BlockedCell(bool isBlocked)
     {
-        _spriteRenderer.color = Color.black;
-        _defaultColor = Color.black;
+        _spriteRenderer.color = isBlocked ? Color.black : _startColor;
+        _defaultColor = isBlocked ? Color.black : _startColor;
     }
 
-    public void Reset()
+    public void Reset(bool isNewMap = false)
     {
-        _spriteRenderer.color = _defaultColor;
+        _defaultColor = isNewMap? _startColor : _defaultColor;
+        _spriteRenderer.color = isNewMap ? _startColor : _defaultColor;
         _fText.SetText("");
     }
 
@@ -56,10 +58,5 @@ public class CellView : MonoBehaviour
     public void HCostUpdated(int amount)
     {
         _hText.SetText(amount.ToString());
-    }
-
-    private void SetDefaultColor(Color colorToSet)
-    {
-        _defaultColor = colorToSet;
     }
 }

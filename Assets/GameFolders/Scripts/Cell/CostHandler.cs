@@ -23,7 +23,7 @@ public class CostHandler
         ResetCosts();
     }
 
-    public async Task SetGCost()
+    public void SetGCost()
     {
         //CellCost = 0;
         GCost = 0;
@@ -39,7 +39,6 @@ public class CostHandler
     public void CalculateHeuristicCost(Cell _endCell)
     {
         HCost = DistanceCalculator.CalculateCellCost(_cell, _endCell);
-        Debug.Log(HCost);
     }
 
     public void ResetCosts()

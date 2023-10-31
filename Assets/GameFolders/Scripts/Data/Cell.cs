@@ -23,7 +23,6 @@ public class Cell
     private NeighbourGatherer _neighbourGatherer;
     private CostHandler _costHandler;
 
-
     public Cell(Map map, int x, int y)
     {
         _map = map;
@@ -31,6 +30,11 @@ public class Cell
         _yPos = y;
         _isBlocked = false;
         _neighbourGatherer = new NeighbourGatherer(this, _map);
+    }
+
+    public void DeregisterEvents()
+    {
+        _neighbourGatherer.DeregisterEvents();
     }
 
     public void AssignCellView(CellView cellViewToAssign)
@@ -52,9 +56,11 @@ public class Cell
         ParentCell = parentCell;
     }
 
-    public void SetBlockedOn()
+    public void SetBlockedStatus(bool isBlocked =true)
     {
-        _isBlocked = true;
+        _isBlocked = isBlocked;
+        if (isBlocked && _cellView != null)
+            _cellView.BlockedCell(isBlocked);
     }
 
     public void AssignedAsInterestPoint(bool isStart)
@@ -63,9 +69,9 @@ public class Cell
         _cellView.ChangeInterestPointColor(isStart);
     }
 
-    public async Task CalculateGCost() 
+    public void CalculateGCost() 
     {
-        await _costHandler.SetGCost();
+        _costHandler.SetGCost();
         UpdateVisual();
     }
 
@@ -75,11 +81,11 @@ public class Cell
         _cellView.HCostUpdated(HCost);
     }
 
-    public void Reset()
+    public void Reset(bool isNewMap = false)
     {
         _costHandler.ResetCosts();
         ParentCell = null;
-        _cellView.Reset();
+        _cellView.Reset(isNewMap);
     }
 
     private void UpdateVisual()

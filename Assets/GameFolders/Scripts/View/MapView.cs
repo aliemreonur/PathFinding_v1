@@ -18,14 +18,20 @@ public class MapView : MonoBehaviour
     private void Awake()
     {
         _instance = this;
-        _map = new Map(MapWidth, MapHeight);
-        allCellViews = new CellView[MapWidth, MapHeight];
+
       
     }
 
     private void Start()
     {
+        _map = new Map(MapWidth, MapHeight);
+        allCellViews = new CellView[MapWidth, MapHeight];
         GenerateMap();
+    }
+
+    private void OnDisable()
+    {
+        _map.DeregisterEvents();
     }
 
     private void GenerateMap()
@@ -41,7 +47,7 @@ public class MapView : MonoBehaviour
                 Cell associatedCell = _map.AllCells[x,y];
                 associatedCell.AssignCellView(instantiatedCellView);
                 if (associatedCell.IsBlocked)
-                    instantiatedCellView.BlockedCell();
+                    instantiatedCellView.BlockedCell(true);
             }
         }
         OnMapSet?.Invoke(MapWidth, MapHeight);
