@@ -36,8 +36,11 @@ public class PathListHandler
 
     public void CellVisited(Cell visitedCell)
     {
-        _openCells.Remove(visitedCell);
-        _visitedCells.Add(visitedCell);
+        if(_openCells.Contains(visitedCell))
+            _openCells.Remove(visitedCell);
+
+        if(!_visitedCells.Contains(visitedCell))
+            _visitedCells.Add(visitedCell);
     }
 
 

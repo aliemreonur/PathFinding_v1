@@ -1,16 +1,67 @@
+using System.Threading.Tasks;
+
+using UnityEngine;
 
 public class AlgorithmBase 
 {
-    protected bool searchActive = false;
-    protected Cell currentCell;
-    protected PathFinder pathFinder;
-    protected PathListHandler pathListHandler;
+    public AlgorithmType algorithmType { get; private set; }
+    public IPathAlgorithm activeAlgo { get; private set; }
+    public PathFinder pathFinder { get; private set; } 
 
-    protected void InitializeAlgo(Cell startCell)
+    private PathListHandler _pathListHandler;
+    private PathHandler _pathHandler;
+    private bool _searchActive = false;
+
+    public Cell startCell => pathFinder.InterestPointsHandler.StartCell;
+    public Cell endCell => pathFinder.InterestPointsHandler.EndCell;
+
+    private AlgorithmType _algorithmType;
+    private IPathAlgorithm _searchByNeighbours, _searchByHeuristic, _greedyAlgorithm, _aStarAlgorithm;
+
+    public AlgorithmBase(PathFinder pathFinder)
     {
-        searchActive = true;
-        currentCell = startCell;
-        pathListHandler.ClearLists();
-       pathListHandler.SetOpenCellList();
+        this.pathFinder = pathFinder;
+        _pathListHandler = new PathListHandler();
+        _searchByNeighbours = new SearcherbyNeighbours(this, _pathListHandler);
+        _searchByHeuristic = new SearcherbyHeuristic(this, _pathListHandler);
+        _pathHandler = new PathHandler();
     }
+
+
+    protected void InitializeAlgo()
+    {
+        _pathListHandler.ClearLists();
+        _pathListHandler.SetOpenCellList();
+    }
+
+    public void SetAlgorithm(int algoID)
+    {
+        switch (algoID)
+        {
+            case 1:
+                _algorithmType = AlgorithmType.Bridths;
+                activeAlgo = _searchByNeighbours;
+                break;
+            case 2:
+                _algorithmType = AlgorithmType.Dijkstra;
+                activeAlgo = _searchByNeighbours;
+                break;
+            case 3:
+                _algorithmType = AlgorithmType.Greedy;
+                activeAlgo = _searchByHeuristic;
+                break;
+            default:
+                _algorithmType = AlgorithmType.AStar;
+                activeAlgo = _searchByHeuristic;
+                break;
+        }
+        InitializeAlgo();
+        activeAlgo.CalculateShortestPath(startCell, endCell);
+    }
+
+    public void CreateThePath(Cell lastCell)
+    {
+         _pathHandler.CreatePath(startCell, lastCell);
+    }
+
 }

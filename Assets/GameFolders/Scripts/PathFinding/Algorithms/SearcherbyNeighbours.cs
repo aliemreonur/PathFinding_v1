@@ -2,33 +2,36 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
 
-public class SearcherbyNeighbours : AlgorithmBase, IPathAlgorithm
+public class SearcherbyNeighbours :  IPathAlgorithm
 {
     private Queue<Cell> _cellsQueue;
     private bool _dijkstraOn;
+    private AlgorithmBase _algorithmBase;
+    private PathListHandler _pathListHandler;
 
-    public SearcherbyNeighbours(PathFinder pathFinderToAssign, PathListHandler pathListHandlerToAssign) 
+    private Cell _currentCell;
+    private bool _searchActive;
+
+    public SearcherbyNeighbours(AlgorithmBase algorithmBase, PathListHandler pathListHandler) 
     {
+        _algorithmBase = algorithmBase;
+        _pathListHandler = pathListHandler; 
         _cellsQueue = new();
-        base.pathFinder = pathFinderToAssign;
-        base.pathListHandler = pathListHandlerToAssign;
     }
 
     public async void CalculateShortestPath(Cell startCell, Cell endCell)
     {
-        _dijkstraOn = pathFinder.activeAlgo == AlgorithmType.Dijkstra ? true : false;
-        _cellsQueue.Clear();
-        InitializeAlgo(startCell);
+        InitializeAlgo();
+        SetDijkaStatus();
         int iterations = 0;
 
-        while (pathListHandler.openCells.Count > 0 && searchActive && iterations < 500)
+        while (_pathListHandler.openCells.Count > 0 && _searchActive && iterations < 500)
         {
             iterations++;
-
             if (_dijkstraOn)
-                currentCell.CalculateGCost();
-            await SearchByNeighbours(currentCell, _dijkstraOn);
-            currentCell = _cellsQueue.Dequeue();
+                _currentCell.CalculateGCost();
+            await SearchByNeighbours(_currentCell, _dijkstraOn);
+            _currentCell = _cellsQueue.Dequeue();
         }
     }
 
@@ -36,22 +39,34 @@ public class SearcherbyNeighbours : AlgorithmBase, IPathAlgorithm
     {
         foreach (var neighbour in activeCell.neighboursList)
         {
-            if (pathListHandler.visitedCells.Contains(neighbour))
+            if (_pathListHandler.visitedCells.Contains(neighbour))
                 continue;
 
             await Awaitable.WaitForSecondsAsync(0.01f);
-            pathListHandler.CellVisited(neighbour);
+            _pathListHandler.CellVisited(neighbour);
             _cellsQueue.Enqueue(neighbour);
-            pathFinder.CellInspected(activeCell, neighbour);
+            _algorithmBase.pathFinder.CellInspected(activeCell, neighbour);
 
-            if (neighbour == pathFinder.endCell)
+            if (neighbour == _algorithmBase.endCell)
             {
-                searchActive = false;
-                //if (dijkstraOn)
-                //    neighbour.CalculateGCost();
-                await pathFinder.CreatePath(neighbour, dijkstraOn);
+                _searchActive = false;
+                if (dijkstraOn)
+                    neighbour.CalculateGCost(); //check this again
+                _algorithmBase.CreateThePath(neighbour);
                 return;
             }
         }
+    }
+
+    private void InitializeAlgo()
+    {
+        _searchActive = true;
+        _currentCell = _algorithmBase.startCell;
+        _cellsQueue.Clear();
+    }
+
+    private void SetDijkaStatus()
+    {
+        _dijkstraOn = _algorithmBase.algorithmType == AlgorithmType.Dijkstra ? true : false;
     }
 }

@@ -5,5 +5,5 @@ using UnityEngine;
 public interface IPathAlgorithm 
 {
     void CalculateShortestPath(Cell startCell, Cell endCell);
-
+    
 }
