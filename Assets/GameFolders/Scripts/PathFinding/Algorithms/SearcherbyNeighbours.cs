@@ -29,7 +29,7 @@ public class SearcherbyNeighbours :  IPathAlgorithm
         {
             iterations++;
             if (_dijkstraOn)
-                _currentCell.CalculateGCost();
+                _currentCell.CalculateCost(true, false);
             await SearchByNeighbours(_currentCell, _dijkstraOn);
             _currentCell = _cellsQueue.Dequeue();
         }
@@ -51,7 +51,7 @@ public class SearcherbyNeighbours :  IPathAlgorithm
             {
                 _searchActive = false;
                 if (dijkstraOn)
-                    neighbour.CalculateGCost(); //check this again
+                    neighbour.CalculateCost(true, false);
                 _algorithmBase.CreateThePath(neighbour);
                 return;
             }

@@ -4,13 +4,12 @@ using UnityEngine;
 
 public class AlgorithmBase 
 {
-    public AlgorithmType algorithmType { get; private set; }
+    public AlgorithmType algorithmType => _algorithmType;
     public IPathAlgorithm activeAlgo { get; private set; }
     public PathFinder pathFinder { get; private set; } 
 
     private PathListHandler _pathListHandler;
     private PathHandler _pathHandler;
-    private bool _searchActive = false;
 
     public Cell startCell => pathFinder.InterestPointsHandler.StartCell;
     public Cell endCell => pathFinder.InterestPointsHandler.EndCell;
@@ -24,6 +23,7 @@ public class AlgorithmBase
         _pathListHandler = new PathListHandler();
         _searchByNeighbours = new SearcherbyNeighbours(this, _pathListHandler);
         _searchByHeuristic = new SearcherbyHeuristic(this, _pathListHandler);
+        _aStarAlgorithm = new AstarAlgorithm(this, _pathListHandler);
         _pathHandler = new PathHandler();
     }
 
@@ -52,7 +52,7 @@ public class AlgorithmBase
                 break;
             default:
                 _algorithmType = AlgorithmType.AStar;
-                activeAlgo = _searchByHeuristic;
+                activeAlgo = _aStarAlgorithm;
                 break;
         }
         InitializeAlgo();

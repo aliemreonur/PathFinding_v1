@@ -1,10 +1,7 @@
 using UnityEngine;
-using System;
-using System.Threading.Tasks;
 
 public class CostHandler 
 {
-    public int CellCost { get; private set; }
     public int HCost { get; private set; }
     public int GCost { get; private set; } 
     private const int INITCOST = 99999;
@@ -19,15 +16,16 @@ public class CostHandler
 
     public void SetGCost()
     {
-        //CellCost = 0;
-        GCost = 0;
+        GCost = INITCOST;
         if (_cell.ParentCell == null)
+        {
+            GCost = 0;
             return;
+        }
 
         CalculateUnitCost();
-        GCost = _unitCostToParent + _cell.ParentCell.GCost;
         CheckForABetterCost();
-        CellCost = GCost;
+        GCost = _unitCostToParent + _cell.ParentCell.GCost;
     }
 
     public void CalculateHeuristicCost(Cell _endCell)
@@ -37,7 +35,6 @@ public class CostHandler
 
     public void ResetCosts()
     {
-        CellCost = INITCOST;
         HCost = INITCOST;
         GCost= INITCOST;
     }

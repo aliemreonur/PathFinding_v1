@@ -14,6 +14,9 @@ public class PathHandler
             {
                 await Awaitable.WaitForSecondsAsync(.15f);
                 cell.ChangeColor(true);
+       
+                if (cell == cell.ParentCell)
+                    break;
                 cell = cell.ParentCell;
             }
         }

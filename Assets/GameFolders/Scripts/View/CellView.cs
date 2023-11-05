@@ -33,7 +33,8 @@ public class CellView : MonoBehaviour
 
     public void CellOnPath()
     {
-        _spriteRenderer.color = Color.green;
+        Debug.Log("On path");
+        _spriteRenderer.color = Color.cyan;
       
     }
 
@@ -50,13 +51,11 @@ public class CellView : MonoBehaviour
         _fText.SetText("");
     }
 
-    public void CellCostUpdated(int amount)
+    public void CellCostUpdated(int gCost, int hCost, int totalCost)
     {
-        _fText.SetText(amount.ToString());
+        _gText.SetText(gCost > 10000 ? "" : gCost.ToString());
+        _hText.SetText(hCost > 10000 ? "" : hCost.ToString());
+        _fText.SetText(totalCost > 10000 ? "" : totalCost.ToString());
     }
 
-    public void HCostUpdated(int amount)
-    {
-        _hText.SetText(amount.ToString());
-    }
 }

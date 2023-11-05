@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class SearcherbyHeuristic : IPathAlgorithm
+public class AstarAlgorithm : IPathAlgorithm
 {
     private bool _aStarOn = false;
     private AlgorithmBase _algorithmBase;
@@ -11,13 +11,22 @@ public class SearcherbyHeuristic : IPathAlgorithm
     private Cell _currentCell;
     private bool _searchActive;
     private List<Cell> _closedList;
+    private List<Cell> _openList;
 
-    public SearcherbyHeuristic(AlgorithmBase algorithmBase, PathListHandler pathListHandler) 
+    public AstarAlgorithm(AlgorithmBase algorithmBase, PathListHandler pathListHandler)
     {
         _algorithmBase = algorithmBase;
         _pathListHandler = pathListHandler;
         _closedList = new();
+        _openList = new();
     }
+
+    //1-look for the neighbour with the lowest F cost
+    //2- if two of the F costs are the same, then look for the H cost
+    //3- take the neighbour with the lowest cost, add it to the closed list - making the current obj as the parent of the neighbour
+    //4- HOW TO DECIDE/CHECK THAT THE NEXT CELL'S PARENT IS THE LOWEST
+    //5- check for the neighbours' neighbours for the lowest cost again
+    //6- if stuck, check 
 
     public async void CalculateShortestPath(Cell activeCell, Cell endCell)
     {
@@ -26,9 +35,13 @@ public class SearcherbyHeuristic : IPathAlgorithm
 
         while (_pathListHandler.openCells.Count > 0 && _searchActive && iterations < 1000)
         {
-            _currentCell.CalculateCost(false, true, endCell);
+            CheckForLowerCostParent();
+
+            Debug.Log(iterations);
+            _currentCell.CalculateCost(true, true, endCell);
             _pathListHandler.CellVisited(_currentCell);
             _closedList.Add(_currentCell);
+            _openList.Remove(_currentCell);
 
             iterations++;
             if (iterations == 999)
@@ -40,8 +53,13 @@ public class SearcherbyHeuristic : IPathAlgorithm
                     continue;
 
                 _pathListHandler.CellVisited(neighbour);
-                neighbour.CalculateCost(false, true, endCell);
-                neighbour.SetParentCell(_currentCell);
+
+                if (!_openList.Contains(neighbour)) //added later
+                    _openList.Add(neighbour);
+
+                neighbour.CalculateCost(true, true, endCell); //calculate the F cost
+                neighbour.SetParentCell(_currentCell); //for now, the parent of the all of the neighbours is the current one?
+
                 await Awaitable.WaitForSecondsAsync(0.01f);
                 _algorithmBase.pathFinder.CellInspected(activeCell, neighbour);
 
@@ -49,8 +67,14 @@ public class SearcherbyHeuristic : IPathAlgorithm
                 {
                     _searchActive = false;
                     foreach (var cell in neighbour.neighboursList)
-                        if (cell.HCost < _currentCell.HCost)
+                    {
+                        if (!_closedList.Contains(cell))
+                            cell.CalculateCost(true, true, endCell);
+
+                        if (cell.FCost < _currentCell.FCost || cell.GCost < _currentCell.GCost)
                             neighbour.SetParentCell(cell);
+                    }
+
                     _algorithmBase.CreateThePath(neighbour);
                     return;
                 }
@@ -60,18 +84,37 @@ public class SearcherbyHeuristic : IPathAlgorithm
         }
     }
 
+    private void CheckForLowerCostParent()
+    {
+
+        if (_currentCell.ParentCell == null) //we are at the start cell
+            return;
+
+        int currentG = _currentCell.GCost;
+        foreach (var cell in _currentCell.neighboursList)
+        {
+            _currentCell.CalculateCost(true, false);
+            if (cell.GCost < _currentCell.ParentCell.GCost)
+            {
+                currentG = cell.GCost;
+                _currentCell.SetParentCell(cell);
+            }
+        }
+    }
+
     private void AssignNextCell()
     {
-        var currentHCost = 99999;
+        var currentCost = 99999;
         Cell nextCell = _currentCell;
-        //the h cost can never change
+
         foreach (var cell in _pathListHandler.visitedCells)
         {
             if (_closedList.Contains(cell))
                 continue;
-            if (cell.HCost < currentHCost)
+
+            if (cell.FCost <= currentCost) 
             {
-                currentHCost = cell.HCost;
+                currentCost = cell.FCost;
                 nextCell = cell;
             }
         }
@@ -80,8 +123,10 @@ public class SearcherbyHeuristic : IPathAlgorithm
 
     private void InitializeAlgo()
     {
+        _openList.Clear();
         _searchActive = true;
         _currentCell = _algorithmBase.startCell;
+        _openList.Add(_currentCell); //added later
         _closedList.Clear();
     }
 
