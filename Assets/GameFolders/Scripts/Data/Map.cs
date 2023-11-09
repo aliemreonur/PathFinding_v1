@@ -37,7 +37,7 @@ public class Map
 
     private void SetBlockRatio()
     {
-        _blockedCellRatio = GameManager.Instance.BlockRatio;
+        _blockedCellRatio = MapView.Instance.BlockRatio;
     }
 
     private void GenerateMap()

@@ -6,9 +6,12 @@ public class MapView : SingletonThis<MapView>
     #region Fields & Properties
     [SerializeField] private CellView _cellViefPrefab;
     [SerializeField] private byte _mapWidth, _mapHeight;
+    [SerializeField][Range(0, 0.5f)] private float _blockRatio;
+
     public Action<byte, byte> OnMapSet;
     public byte MapWidth => _mapWidth;
     public byte MapHeight => _mapHeight;
+    public float BlockRatio => _blockRatio;
     public CellView[,] allCellViews;
     public Map map => _map;
 
