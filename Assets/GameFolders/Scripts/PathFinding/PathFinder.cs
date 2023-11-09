@@ -3,12 +3,14 @@ using UnityEngine;
 [RequireComponent(typeof(MapView))]
 public class PathFinder : MonoBehaviour
 {
+    #region Fields & Properties
     public InterestPointsHandler InterestPointsHandler => _interestPointsHandler;
     private InterestPointsHandler _interestPointsHandler;
     private MapView _mapView;
     private AlgorithmHandler _algorithmBase;
+    #endregion
 
-
+    #region MonoMethods
     private void Awake()
     {
         _mapView = GetComponent<MapView>();
@@ -25,7 +27,9 @@ public class PathFinder : MonoBehaviour
         _mapView.OnMapSet -= SetInterestPoints;
         _interestPointsHandler.DeregisterEvents();
     }
+    #endregion
 
+    #region Public Methods
     public void Reset()
     {
         foreach (var cell in _mapView.map.AllCells)
@@ -45,6 +49,7 @@ public class PathFinder : MonoBehaviour
         if (neighbourCell.ParentCell == null && neighbourCell != _interestPointsHandler.StartCell)
             neighbourCell.SetParentCell(activeCell);
     }
+    #endregion
 
     private void SetInterestPoints(byte dummy, byte dummy2) // :)
     {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 [System.Serializable]
 public class Cell
 {
+    #region Fields & Properties
     public List<Cell> neighboursList => _neighbourGatherer.neighbourCells;
     public int FCost => _costHandler.GCost + _costHandler.HCost;
     public int GCost => _costHandler.GCost;
@@ -19,6 +20,9 @@ public class Cell
     private CellView _cellView;
     private NeighbourGatherer _neighbourGatherer;
     private CostHandler _costHandler;
+    #endregion
+
+    #region Const
 
     public Cell(Map map, int x, int y)
     {
@@ -28,7 +32,9 @@ public class Cell
         _isBlocked = false;
         _neighbourGatherer = new NeighbourGatherer(this, _map);
     }
+    #endregion
 
+    #region Public Methods
     public void DeregisterEvents()
     {
         _neighbourGatherer.DeregisterEvents();
@@ -88,6 +94,15 @@ public class Cell
         _cellView.CellCostUpdated(_costHandler.GCost, _costHandler.HCost, FCost);
     }
 
+    public void Reset(bool isNewMap = false)
+    {
+        _costHandler.ResetCosts();
+        ParentCell = null;
+        _cellView.Reset(isNewMap);
+    }
+    #endregion
+
+    #region Private Methods
     private void CalculateGCost() 
     {
         _costHandler.SetGCost();
@@ -97,12 +112,7 @@ public class Cell
     {
         _costHandler.CalculateHeuristicCost(endCell);
     }
+    #endregion
 
-    public void Reset(bool isNewMap = false)
-    {
-        _costHandler.ResetCosts();
-        ParentCell = null;
-        _cellView.Reset(isNewMap);
-    }
 }
 

@@ -2,12 +2,14 @@ using UnityEngine;
 
 public class InterestPointsHandler 
 {
+    #region Fields & Properties
     public Cell StartCell => _startCell;
     public Cell EndCell => _endCell;
 
     private Map _map;
     private Cell _startCell;
     private Cell _endCell;
+    #endregion
 
     public InterestPointsHandler(Map map)
     {
@@ -16,6 +18,7 @@ public class InterestPointsHandler
         GameManager.Instance.OnMapRestart += AssignInterestPoints;
     }
 
+    #region Methods
     public void DeregisterEvents()
     {
         GameManager.Instance.OnMapRestart -= AssignInterestPoints;
@@ -64,6 +67,6 @@ public class InterestPointsHandler
         _startCell = AssignRandomPoint(true);
         _endCell = AssignRandomPoint(false);
     }
-
+    #endregion
 
 }

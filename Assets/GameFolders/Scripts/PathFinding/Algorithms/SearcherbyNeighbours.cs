@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 public class SearcherbyNeighbours :  IPathAlgorithm
 {
+    #region Fields
     private Queue<Cell> _cellsQueue;
     private bool _dijkstraOn;
     private AlgorithmHandler _algorithmHandler;
@@ -11,6 +12,7 @@ public class SearcherbyNeighbours :  IPathAlgorithm
 
     private Cell _currentCell;
     private bool _searchActive, _endCellReached;
+    #endregion
 
     public SearcherbyNeighbours(AlgorithmHandler algorithmHandler, PathListHandler pathListHandler) 
     {
@@ -25,7 +27,7 @@ public class SearcherbyNeighbours :  IPathAlgorithm
         SetDijkaStatus();
         int iterations = 0;
 
-        while (_pathListHandler.openCells.Count > 0 && _searchActive && iterations < 9999)
+        while (_pathListHandler.openCells.Count > 0 && _searchActive && iterations < _algorithmHandler.maxIterations)
         {
             iterations++;
             await SearchByNeighbours(_currentCell);

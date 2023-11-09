@@ -3,27 +3,41 @@ using System;
 
 public class MapView : SingletonThis<MapView>
 {
+    #region Fields & Properties
     [SerializeField] private CellView _cellViefPrefab;
-    public Action<byte, byte> OnMapSet;
-    private byte MapWidth => _mapWidth;
-    private byte MapHeight => _mapHeight;
     [SerializeField] private byte _mapWidth, _mapHeight;
-
+    public Action<byte, byte> OnMapSet;
+    public byte MapWidth => _mapWidth;
+    public byte MapHeight => _mapHeight;
     public CellView[,] allCellViews;
     public Map map => _map;
 
     private Map _map;
+    private PrefabLoader _prefabLoader;
+    #endregion
 
     private void Start()
     {
+        SetMap();
+        SetPrefabLoader();
+    }
+
+    private void SetMap()
+    {
         _map = new Map(MapWidth, MapHeight);
         allCellViews = new CellView[MapWidth, MapHeight];
-        GenerateMap();
+    }
+
+    private void SetPrefabLoader()
+    {
+        _prefabLoader = new PrefabLoader();
+        _prefabLoader.OnAssetLoaded += GenerateMap;
     }
 
     private void OnDisable()
     {
         _map.DeregisterEvents();
+        _prefabLoader.OnAssetLoaded -= GenerateMap;
     }
 
     private void GenerateMap()

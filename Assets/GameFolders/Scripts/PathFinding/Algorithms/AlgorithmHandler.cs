@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class AlgorithmHandler 
 {
+    #region Fields & Properties
+    public int maxIterations = MapView.Instance.MapHeight * MapView.Instance.MapWidth * 2;
     public AlgorithmType algorithmType => _algorithmType;
     public IPathAlgorithm activeAlgo { get; private set; }
     public PathFinder pathFinder { get; private set; } 
@@ -15,6 +17,7 @@ public class AlgorithmHandler
     private AlgorithmType _algorithmType;
     private IPathAlgorithm _searchByNeighbours, _greedyAlgorithm, _aStarAlgorithm;
     private float _time;
+    #endregion
 
     public AlgorithmHandler(PathFinder pathFinder)
     {
@@ -26,13 +29,6 @@ public class AlgorithmHandler
         _pathHandler = new PathHandler();
     }
 
-    protected void ResetLists()
-    {
-        pathFinder.Reset();
-        _pathListHandler.ClearLists();
-        _pathListHandler.SetOpenCellList();
-        _time = Time.time;
-    }
 
     public void SetAlgorithm(int algoID)
     {
@@ -64,6 +60,14 @@ public class AlgorithmHandler
         var totalTime = Time.time - _time;
         Debug.Log($"The algorithm took {totalTime} seconds to complete using the {_algorithmType}");
          _pathHandler.CreatePath(startCell, lastCell);
+    }
+
+    protected void ResetLists()
+    {
+        pathFinder.Reset();
+        _pathListHandler.ClearLists();
+        _pathListHandler.SetOpenCellList();
+        _time = Time.time;
     }
 
 }

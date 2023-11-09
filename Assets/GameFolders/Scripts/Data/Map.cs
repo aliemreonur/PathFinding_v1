@@ -3,21 +3,36 @@ using UnityEngine;
 
 public class Map 
 {
+    #region Fields & Properties
     public Action OnMapLoaded;
     public int Width { get; private set; }
     public int Height { get; private set; }
     public Cell[,]AllCells { get; private set; }
 
     private float _blockedCellRatio;
+    #endregion
 
+    #region Const
     public Map(int width, int height)
     {
-        Width = width; Height = height;
-        AllCells = new Cell[Width, Height];
+        SetMap(width, height);
         SetBlockRatio();
         GenerateMap();
         SetRandomCellsBlocked();
         GameManager.Instance.OnMapRestart += RestartingMap;
+    }
+    #endregion
+
+    #region Methods
+    public void DeregisterEvents()
+    {
+        GameManager.Instance.OnMapRestart -= RestartingMap;
+    }
+
+    private void SetMap(int width, int height)
+    {
+        Width = width; Height = height;
+        AllCells = new Cell[Width, Height];
     }
 
     private void SetBlockRatio()
@@ -39,11 +54,9 @@ public class Map
 
     private void SetRandomCellsBlocked()
     {
-        Debug.Log(_blockedCellRatio);
         int currentBlockedAmount = 0;
         int totalCells = Width * Height;
         int targetBlocked = Mathf.FloorToInt(totalCells * _blockedCellRatio);
-        Debug.Log(totalCells + "," + targetBlocked);
         int randomX = 0;
         int randomY = 0;
         int iterations = 0;
@@ -68,11 +81,6 @@ public class Map
         OnMapLoaded?.Invoke();
     }
 
-    public void DeregisterEvents()
-    {
-        GameManager.Instance.OnMapRestart -= RestartingMap;
-    }
-
     private void RestartingMap()
     {
         foreach(var cell in AllCells)
@@ -82,7 +90,6 @@ public class Map
         }
 
         SetRandomCellsBlocked();
-
     }
-
+    #endregion
 }

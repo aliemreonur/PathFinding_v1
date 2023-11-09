@@ -4,12 +4,14 @@ using UnityEngine;
 
 public class Astar : IPathAlgorithm
 {
+    #region Fields & Properties
     private AlgorithmHandler _algorithmHandler;
     private PathListHandler _pathListHandler;
 
     private Cell _currentCell;
     private bool _searchActive, _endCellFound;
     private List<Cell> _calculatedList;
+    #endregion
 
     public Astar(AlgorithmHandler algorithmHandler, PathListHandler pathListHandler)
     {
@@ -18,12 +20,14 @@ public class Astar : IPathAlgorithm
         _calculatedList = new();
     }
 
+    #region Methods
+
     public async void CalculateShortestPath(Cell activeCell, Cell endCell)
     {
         InitializeAlgo();
         int iterations = 0;
 
-        while (_pathListHandler.openCells.Count > 0 && _searchActive && iterations < 1000)
+        while (_pathListHandler.openCells.Count > 0 && _searchActive && iterations < _algorithmHandler.maxIterations)
         {
             _currentCell.CalculateCost(true, true, endCell);
             _pathListHandler.CellVisited(_currentCell);
@@ -106,5 +110,6 @@ public class Astar : IPathAlgorithm
         _currentCell = _algorithmHandler.startCell;
         _calculatedList.Clear();
     }
+    #endregion
 
 }

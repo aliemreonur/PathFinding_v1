@@ -2,10 +2,13 @@ using System.Collections.Generic;
 
 public class NeighbourGatherer
 {
+    #region Fields
     private Cell _parentCell;
     public List<Cell> neighbourCells { get; private set; }
     private Map _map;
+    #endregion
 
+    #region Const
     public NeighbourGatherer(Cell parentCell, Map map)
     {
         _parentCell = parentCell; 
@@ -14,7 +17,9 @@ public class NeighbourGatherer
         _map.OnMapLoaded += GetNeighbours;
         GameManager.Instance.OnMapRestart += GetNeighbours;
     }
+    #endregion
 
+    #region Methods
     public void DeregisterEvents()
     {
         GameManager.Instance.OnMapRestart -= GetNeighbours;
@@ -42,5 +47,6 @@ public class NeighbourGatherer
             return false;
         return true;
     }
+    #endregion
 
 }

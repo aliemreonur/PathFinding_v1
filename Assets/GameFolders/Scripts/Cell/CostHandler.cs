@@ -1,19 +1,21 @@
-using UnityEngine;
-using System.Threading.Tasks;
 
 public class CostHandler
 {
+    #region Fields & Properties
     public int HCost { get; private set; }
     public int GCost { get; private set; }
     private const int INITCOST = 99999;
     private Cell _cell;
     private int _unitCostToParent;
+    #endregion
 
     public CostHandler(Cell cell)
     {
         _cell = cell;
         ResetCosts();
     }
+
+    #region Public Methods
 
     public void SetGCost()
     {
@@ -23,12 +25,7 @@ public class CostHandler
             return;
         }
         CalculateUnitCost();
-        AssignGCost();
-    }
-
-    private void AssignGCost()
-    {
-        GCost = _unitCostToParent + _cell.ParentCell.GCost;
+        CalculateG();
     }
 
     public void CalculateHeuristicCost(Cell endCell)
@@ -65,15 +62,23 @@ public class CostHandler
             }
         }
     }
+    #endregion
 
+    #region Private Methods
     private void AssignNewParent(bool gCost, bool hCost, Cell neighbourCell)
     {
         _cell.SetParentCell(neighbourCell);
         _cell.CalculateCost(gCost, hCost);
     }
 
+    private void CalculateG()
+    {
+        GCost = _unitCostToParent + _cell.ParentCell.GCost;
+    }
+
     private void CalculateUnitCost()
     {
         _unitCostToParent = DistanceCalculator.CalculateCellCost(_cell.ParentCell, _cell);
     }
+    #endregion
 }
