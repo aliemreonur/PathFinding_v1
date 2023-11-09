@@ -38,6 +38,14 @@ public class InterestPointsHandler
 
             randomCell = _map.AllCells[randomX, randomY];
 
+            if(!isStart)
+            {
+                //check if the cell is close
+                int distanceToStart = DistanceCalculator.CalculateCellCost(_startCell, randomCell);
+                if (distanceToStart < 30)
+                    continue;
+            }
+
             if (!randomCell.IsBlocked)
             {
                 randomCell.AssignedAsInterestPoint(isStart);

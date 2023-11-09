@@ -8,15 +8,21 @@ public class Map
     public int Height { get; private set; }
     public Cell[,]AllCells { get; private set; }
 
-    [SerializeField] private float _blockedCellRatio = 0.20f;
+    private float _blockedCellRatio;
 
     public Map(int width, int height)
     {
         Width = width; Height = height;
         AllCells = new Cell[Width, Height];
+        SetBlockRatio();
         GenerateMap();
         SetRandomCellsBlocked();
         GameManager.Instance.OnMapRestart += RestartingMap;
+    }
+
+    private void SetBlockRatio()
+    {
+        _blockedCellRatio = GameManager.Instance.BlockRatio;
     }
 
     private void GenerateMap()
@@ -33,13 +39,15 @@ public class Map
 
     private void SetRandomCellsBlocked()
     {
+        Debug.Log(_blockedCellRatio);
         int currentBlockedAmount = 0;
         int totalCells = Width * Height;
         int targetBlocked = Mathf.FloorToInt(totalCells * _blockedCellRatio);
+        Debug.Log(totalCells + "," + targetBlocked);
         int randomX = 0;
         int randomY = 0;
         int iterations = 0;
-        int maxIterations = 500;
+        int maxIterations = totalCells * 2;
 
         do
         {

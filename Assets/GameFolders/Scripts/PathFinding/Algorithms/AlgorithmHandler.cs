@@ -1,8 +1,6 @@
-using System.Threading.Tasks;
-
 using UnityEngine;
 
-public class AlgorithmBase 
+public class AlgorithmHandler 
 {
     public AlgorithmType algorithmType => _algorithmType;
     public IPathAlgorithm activeAlgo { get; private set; }
@@ -15,23 +13,25 @@ public class AlgorithmBase
     public Cell endCell => pathFinder.InterestPointsHandler.EndCell;
 
     private AlgorithmType _algorithmType;
-    private IPathAlgorithm _searchByNeighbours, _searchByHeuristic, _greedyAlgorithm, _aStarAlgorithm;
+    private IPathAlgorithm _searchByNeighbours, _greedyAlgorithm, _aStarAlgorithm;
+    private float _time;
 
-    public AlgorithmBase(PathFinder pathFinder)
+    public AlgorithmHandler(PathFinder pathFinder)
     {
         this.pathFinder = pathFinder;
         _pathListHandler = new PathListHandler();
         _searchByNeighbours = new SearcherbyNeighbours(this, _pathListHandler);
-        _searchByHeuristic = new SearcherbyHeuristic(this, _pathListHandler);
-        _aStarAlgorithm = new AstarAlgorithm(this, _pathListHandler);
+        _greedyAlgorithm = new Greedy(this, _pathListHandler);
+        _aStarAlgorithm = new Astar(this, _pathListHandler);
         _pathHandler = new PathHandler();
     }
 
-
-    protected void InitializeAlgo()
+    protected void ResetLists()
     {
+        pathFinder.Reset();
         _pathListHandler.ClearLists();
         _pathListHandler.SetOpenCellList();
+        _time = Time.time;
     }
 
     public void SetAlgorithm(int algoID)
@@ -48,19 +48,21 @@ public class AlgorithmBase
                 break;
             case 3:
                 _algorithmType = AlgorithmType.Greedy;
-                activeAlgo = _searchByHeuristic;
+                activeAlgo = _greedyAlgorithm;
                 break;
             default:
                 _algorithmType = AlgorithmType.AStar;
                 activeAlgo = _aStarAlgorithm;
                 break;
         }
-        InitializeAlgo();
+        ResetLists();
         activeAlgo.CalculateShortestPath(startCell, endCell);
     }
 
     public void CreateThePath(Cell lastCell)
     {
+        var totalTime = Time.time - _time;
+        Debug.Log($"The algorithm took {totalTime} seconds to complete using the {_algorithmType}");
          _pathHandler.CreatePath(startCell, lastCell);
     }
 

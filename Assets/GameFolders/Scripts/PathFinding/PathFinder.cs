@@ -1,8 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using System.Threading.Tasks;
-using System;
 
 [RequireComponent(typeof(MapView))]
 public class PathFinder : MonoBehaviour
@@ -10,13 +6,13 @@ public class PathFinder : MonoBehaviour
     public InterestPointsHandler InterestPointsHandler => _interestPointsHandler;
     private InterestPointsHandler _interestPointsHandler;
     private MapView _mapView;
-    private AlgorithmBase _algorithmBase;
+    private AlgorithmHandler _algorithmBase;
 
 
     private void Awake()
     {
         _mapView = GetComponent<MapView>();
-        _algorithmBase = new AlgorithmBase(this);
+        _algorithmBase = new AlgorithmHandler(this);
     }
 
     private void OnEnable()

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -17,31 +15,33 @@ public class CellView : MonoBehaviour
         _spriteRenderer = GetComponent<SpriteRenderer>();
         if (_spriteRenderer == null)
             Debug.LogError("The cell could not gather its mat");
-        _startColor = _spriteRenderer.material.color;
+        _startColor = _spriteRenderer.color;
+        SetDefaultColor();
     }
 
     public void ChangeInterestPointColor(bool isStart)
     {
         _spriteRenderer.color = isStart ? Color.green : Color.red;
-        _defaultColor = _spriteRenderer.color;
+        SetDefaultColor();
     }
 
     public void CellVisited()
     {
-        _spriteRenderer.color = Color.gray;
+        Flash();
     }
 
     public void CellOnPath()
     {
-        Debug.Log("On path");
-        _spriteRenderer.color = Color.cyan;
-      
+        ChangeColor(Color.cyan); 
     }
 
     public void BlockedCell(bool isBlocked)
     {
         _spriteRenderer.color = isBlocked ? Color.black : _startColor;
-        _defaultColor = isBlocked ? Color.black : _startColor;
+        _gText.SetText("");
+        _hText.SetText("");
+        _fText.SetText("");
+        SetDefaultColor();
     }
 
     public void Reset(bool isNewMap = false)
@@ -56,6 +56,23 @@ public class CellView : MonoBehaviour
         _gText.SetText(gCost > 10000 ? "" : gCost.ToString());
         _hText.SetText(hCost > 10000 ? "" : hCost.ToString());
         _fText.SetText(totalCost > 10000 ? "" : totalCost.ToString());
+    }
+
+    private void SetDefaultColor()
+    {
+        _defaultColor = _spriteRenderer.color;
+    }
+
+    private async void Flash()
+    {
+        ChangeColor(Color.yellow);
+        await Awaitable.WaitForSecondsAsync(0.01f);
+        ChangeColor(Color.gray);
+    }
+
+    private void ChangeColor(Color color)
+    {
+        _spriteRenderer.color = color;
     }
 
 }

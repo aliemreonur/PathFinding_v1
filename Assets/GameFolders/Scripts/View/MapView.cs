@@ -1,26 +1,18 @@
 using UnityEngine;
 using System;
 
-public class MapView : MonoBehaviour
+public class MapView : SingletonThis<MapView>
 {
-    public Action<byte, byte> OnMapSet;
     [SerializeField] private CellView _cellViefPrefab;
-    public static MapView Instance => _instance;
+    public Action<byte, byte> OnMapSet;
+    private byte MapWidth => _mapWidth;
+    private byte MapHeight => _mapHeight;
+    [SerializeField] private byte _mapWidth, _mapHeight;
+
     public CellView[,] allCellViews;
     public Map map => _map;
 
-    public byte MapWidth;
-    public byte MapHeight;
-
-    private static MapView _instance;
     private Map _map;
-
-    private void Awake()
-    {
-        _instance = this;
-
-      
-    }
 
     private void Start()
     {

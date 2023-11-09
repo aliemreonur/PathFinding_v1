@@ -1,14 +1,12 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class PathListHandler 
 {
     public List<Cell> openCells => _openCells;
-    public List<Cell> visitedCells => _visitedCells;
+    public List<Cell> closedCells => _closedCells;
 
     private List<Cell> _openCells;
-    private List<Cell> _visitedCells;
+    private List<Cell> _closedCells;
     private MapView _mapView;
 
 
@@ -16,7 +14,7 @@ public class PathListHandler
     {
         _mapView = MapView.Instance;
         _openCells = new List<Cell>();
-        _visitedCells = new List<Cell>();
+        _closedCells = new List<Cell>();
     }
 
     public void SetOpenCellList()
@@ -31,7 +29,7 @@ public class PathListHandler
     public void ClearLists()
     {
         _openCells.Clear();
-        _visitedCells.Clear();
+        _closedCells.Clear();
     }
 
     public void CellVisited(Cell visitedCell)
@@ -39,8 +37,8 @@ public class PathListHandler
         if(_openCells.Contains(visitedCell))
             _openCells.Remove(visitedCell);
 
-        if(!_visitedCells.Contains(visitedCell))
-            _visitedCells.Add(visitedCell);
+        if(!_closedCells.Contains(visitedCell))
+            _closedCells.Add(visitedCell);
     }
 
 

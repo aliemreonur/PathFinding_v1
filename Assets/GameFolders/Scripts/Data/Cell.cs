@@ -1,13 +1,10 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using System.Threading.Tasks;
 
 [System.Serializable]
 public class Cell
 {
     public List<Cell> neighboursList => _neighbourGatherer.neighbourCells;
-    public int FCost { get; private set; }
+    public int FCost => _costHandler.GCost + _costHandler.HCost;
     public int GCost => _costHandler.GCost;
     public int HCost => _costHandler.HCost;
     public bool IsBlocked => _isBlocked;
@@ -71,38 +68,34 @@ public class Cell
 
     public void CalculateCost(bool gCost, bool hCost, Cell endCell = null)
     {
-        FCost = 99999;
         if (gCost && !hCost)
         {
             CalculateGCost();
-            FCost = _costHandler.GCost;
+            _costHandler.SearchForABetterParent(gCost, hCost);
         }
  
         else if (!gCost && hCost && endCell != null)
         {
             CalculateHCost(endCell);
-            FCost = _costHandler.HCost;
         }
 
-        else if(gCost && hCost)
+        else if(gCost && hCost && endCell != null)
         {
             CalculateGCost();
             CalculateHCost(endCell);
-            FCost = _costHandler.GCost + _costHandler.HCost;
         }
+
         _cellView.CellCostUpdated(_costHandler.GCost, _costHandler.HCost, FCost);
     }
 
     private void CalculateGCost() 
     {
         _costHandler.SetGCost();
-        //UpdateVisual();
     }
 
     private void CalculateHCost(Cell endCell)
     {
         _costHandler.CalculateHeuristicCost(endCell);
-        //_cellView.HCostUpdated(_costHandler.HCost);
     }
 
     public void Reset(bool isNewMap = false)
@@ -111,7 +104,5 @@ public class Cell
         ParentCell = null;
         _cellView.Reset(isNewMap);
     }
-
-
 }
 
