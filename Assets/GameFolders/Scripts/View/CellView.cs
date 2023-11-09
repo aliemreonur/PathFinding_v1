@@ -3,12 +3,14 @@ using TMPro;
 
 public class CellView : MonoBehaviour
 {
+    #region Fields
     private SpriteRenderer _spriteRenderer;
     [SerializeField] private TextMeshPro _fText;
     [SerializeField] private TextMeshPro _gText;
     [SerializeField] private TextMeshPro _hText;
     private Color _defaultColor;
     private Color _startColor;
+    #endregion
 
     private void Awake()
     {
@@ -17,6 +19,7 @@ public class CellView : MonoBehaviour
             Debug.LogError("The cell could not gather its mat");
         _startColor = _spriteRenderer.color;
         SetDefaultColor();
+        SetTextFieldsEmpty();
     }
 
     public void ChangeInterestPointColor(bool isStart)
@@ -38,17 +41,22 @@ public class CellView : MonoBehaviour
     public void BlockedCell(bool isBlocked)
     {
         _spriteRenderer.color = isBlocked ? Color.black : _startColor;
+        SetTextFieldsEmpty();
+        SetDefaultColor();
+    }
+
+    private void SetTextFieldsEmpty()
+    {
         _gText.SetText("");
         _hText.SetText("");
         _fText.SetText("");
-        SetDefaultColor();
     }
 
     public void Reset(bool isNewMap = false)
     {
         _defaultColor = isNewMap? _startColor : _defaultColor;
         _spriteRenderer.color = isNewMap ? _startColor : _defaultColor;
-        _fText.SetText("");
+        SetTextFieldsEmpty();
     }
 
     public void CellCostUpdated(int gCost, int hCost, int totalCost)
