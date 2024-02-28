@@ -2,7 +2,7 @@
 
 public enum AlgorithmType 
 {
-    Bridths,
+    Breadths,
     Dijkstra,
     Greedy,
     AStar

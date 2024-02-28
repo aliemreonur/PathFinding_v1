@@ -35,7 +35,7 @@ public class AlgorithmHandler
         switch (algoID)
         {
             case 1:
-                _algorithmType = AlgorithmType.Bridths;
+                _algorithmType = AlgorithmType.Breadths;
                 activeAlgo = _searchByNeighbours;
                 break;
             case 2:
